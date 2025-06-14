@@ -1,0 +1,29 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon src/server.js",
+    "dev": "nodemon index.js",
+    "build": "echo \"No build step defined\"",
+    "lint": "echo \"No linting step defined\"",
+    "format": "echo \"No formatting step defined\"",
+    "prestart": "echo \"Running prestart script\"",
+    "poststart": "echo \"Running poststart script\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "multer": "^2.0.1",
+    "nodemon": "^3.1.10",
+    "openai": "^5.3.0",
+    "pdf-parse": "^1.1.1",
+    "pg": "^8.16.0"
+  }
+}
