@@ -1,6 +1,6 @@
 import fs from "fs";
 import pdf from "pdf-parse/lib/pdf-parse.js";
-import grokService from "../services/grok.service.js";
+import grokService from "../service/grok.service.js";
 
 class GrokController {
   async analyzeResume(req, res) {
@@ -61,6 +61,28 @@ class GrokController {
           if (err) console.error("Failed to delete uploaded file:", err);
         });
       }
+    }
+  }
+
+  async questionsBasedOnJobDescription(req, res) {
+    try {
+
+      const { description = null } = req.body;
+
+      if (!description ) {
+        return res
+          .status(400)
+          .json({ error: "Job description is required" });
+      }
+
+      const questions = await grokService.getQuestionsBasedOnJobDescriptionAndCompany(
+        description
+      );
+
+      res.json({ questions });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to get questions" });
     }
   }
 }

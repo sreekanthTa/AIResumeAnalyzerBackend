@@ -6,9 +6,11 @@ import cors from 'cors';
 import grokRoutes from './routes/grok.router.js';
 
 dotenv.config();
-
 const app = express();
+
+// Middleware setup
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors({ origin: process.env.FRONTEND_ORIGIN, credentials: true }));
 
 
