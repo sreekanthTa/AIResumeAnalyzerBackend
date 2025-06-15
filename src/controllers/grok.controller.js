@@ -26,6 +26,14 @@ class GrokController {
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "Failed to analyze resume" });
+    }finally
+    {
+      // Clean up uploaded file
+      if (req.file && req.file.path) {
+        fs.unlink(req.file.path, (err) => {
+          if (err) console.error("Failed to delete uploaded file:", err);
+        }); 
+    }
     }
   }
 
