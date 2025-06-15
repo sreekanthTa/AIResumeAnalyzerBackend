@@ -355,6 +355,68 @@ class GrokService {
   
     return response.choices[0].message.content;
   }
+
+  async chat(messages, description, res) {
+    try {
+      // Set headers for SSE (Server-Sent Events)
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
+  
+      // Input validation
+      if (!messages || !description) {
+        throw new Error("messages and description are required");
+      }
+      if (!Array.isArray(messages)) {
+        throw new Error("messages must be an array");
+      }
+      if (messages.length === 0) {
+        throw new Error("messages array cannot be empty");
+      }
+  
+      // Build system prompt
+      const systemPrompt = `You are an AI assistant specialized in technical recruitment.
+  Chat with the user based only on the job description.
+  Do not respond to off-topic questions.
+  Stay concise and relevant.
+  
+  ---
+  Job Description:
+  """${description}"""`;
+  
+      const systemMessage = { role: "system", content: systemPrompt };
+      const allMessages = [systemMessage, ...messages];
+  
+      // OpenAI stream request
+      const completion = await this.openai.chat.completions.create(
+        {
+          model: "llama3-70b-8192", // or "gpt-4", etc.
+          messages: allMessages,
+          stream: true,
+          max_tokens: 1000,
+        }
+      );
+  
+      // Stream response token by token
+      for await (const chunk of completion) {
+        const content = chunk.choices?.[0]?.delta?.content;
+        if (content) {
+          res.write(`data: ${content}\n\n`);
+        }
+      }
+  
+      // Mark stream end
+      res.write(`data: [DONE]\n\n`);
+      res.end();
+  
+    } catch (error) {
+      console.error("Error in chat method:", error);
+      res.status(500).write(`data: [ERROR]: ${error.message}\n\n`);
+      res.end();
+    }
+  }
+  
+  
 }
 
 export default new GrokService();

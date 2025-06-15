@@ -12,6 +12,7 @@ const upload = multer({ dest: 'uploads/' });
 
 grokRouter.post('/analyze',upload.single('resume'), grokController.analyzeResume);
 grokRouter.post('/rewrite', upload.single('resume'), grokController.rewriteResume);
+grokRouter.post('/chat',  grokController.chat);
 
 
 

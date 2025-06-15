@@ -93,6 +93,29 @@ class GrokController {
       res.status(500).json({ error: "Failed to get questions" });
     }
   }
+
+  async chat(req, res){
+    try{
+        const messages = req.body.messages;
+        const description = req.body.description;
+    
+        if (!messages || !description) {
+            return res
+            .status(400)
+            .json({ error: "messages file and  description are required" });
+        }
+    
+        const result = await grokService.chat(
+            messages,
+            description,
+            res
+        );
+        // res.json({ result });
+    }catch(err){
+        console.error(err);
+        res.status(500).json({ error: "Failed to chat" });
+    }
+  }
 }
 
 export default new GrokController();
