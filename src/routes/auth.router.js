@@ -11,4 +11,7 @@ router.post('/signin', authController.signin);
 // Refresh Token Route
 router.post('/refresh-token', authController.refreshToken);
 
+// Logout Route
+router.post('/logout', authController.logout);
+
 export default router;
