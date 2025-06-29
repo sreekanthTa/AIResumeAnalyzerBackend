@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 
 import grokRoutes from './routes/grok.router.js';
 import authRoutes from './routes/auth.router.js';
+import questionRoutes from './routes/question.router.js';
 
 dotenv.config();
 const app = express();
@@ -30,6 +31,7 @@ app.use((req, res, next) => {
 
 app.use('/api/resume', grokRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/questions', questionRoutes);
 
 
 app.get('/', (req, res) => {

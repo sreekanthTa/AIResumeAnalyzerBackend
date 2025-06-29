@@ -67,10 +67,12 @@ class AuthController {
         // Clear the refresh token cookie
         res.clearCookie('refreshToken', {
             httpOnly: true,
-            secure: true,
-            sameSite: 'strict'
-        });
+            secure: 'false',
+            sameSite: 'strict',
+            path: '/api/auth/refresh-token',
 
+        });
+        console.log('User logged out successfully');
         res.status(200).json({ message: 'Logout successful' });
     } catch (error) {
         res.status(500).json({ message: 'Internal server error', error });
