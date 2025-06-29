@@ -105,18 +105,18 @@ class GrokService {
     Job Description:
     """${jobDescription}"""
     `;
-    
-    
-    
-  
+
+
+
+
     const response = await this.openai.chat.completions.create({
       model: "llama3-70b-8192",
       messages: [{ role: "user", content: prompt }],
     });
-  
+
     return response.choices[0].message.content;
   }
-  
+
 
   async rewriteResume(resume, jobDescription) {
     const prompt = `
@@ -252,13 +252,13 @@ class GrokService {
     Job Description:
     """${jobDescription}"""
     `;
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 
     const response = await this.openai.chat.completions.create({
       model: "llama3-70b-8192", // ✅ Correct model name for Groq
@@ -344,15 +344,15 @@ class GrokService {
     Job Description:
     """${jobDescription}"""
     `;
-    
-    
-    
-  
+
+
+
+
     const response = await this.openai.chat.completions.create({
       model: "llama3-70b-8192",
       messages: [{ role: "user", content: prompt }],
     });
-  
+
     return response.choices[0].message.content;
   }
 
@@ -362,7 +362,7 @@ class GrokService {
       res.setHeader("Content-Type", "text/event-stream");
       res.setHeader("Cache-Control", "no-cache");
       res.setHeader("Connection", "keep-alive");
-  
+
       // Input validation
       if (!messages || !description) {
         throw new Error("messages and description are required");
@@ -373,7 +373,7 @@ class GrokService {
       if (messages.length === 0) {
         throw new Error("messages array cannot be empty");
       }
-  
+
       // Build system prompt
       const systemPrompt = `You are an AI assistant specialized in technical recruitment.
   Chat with the user based only on the job description.
@@ -383,10 +383,10 @@ class GrokService {
   ---
   Job Description:
   """${description}"""`;
-  
+
       const systemMessage = { role: "system", content: systemPrompt };
       const allMessages = [systemMessage, ...messages];
-  
+
       // OpenAI stream request
       const completion = await this.openai.chat.completions.create(
         {
@@ -396,7 +396,7 @@ class GrokService {
           max_tokens: 1000,
         }
       );
-  
+
       // Stream response token by token
       for await (const chunk of completion) {
         const content = chunk.choices?.[0]?.delta?.content;
@@ -404,19 +404,19 @@ class GrokService {
           res.write(`data: ${content}\n\n`);
         }
       }
-  
+
       // Mark stream end
       res.write(`data: [DONE]\n\n`);
       res.end();
-  
+
     } catch (error) {
       console.error("Error in chat method:", error);
       res.status(500).write(`data: [ERROR]: ${error.message}\n\n`);
       res.end();
     }
   }
-  
-  
+
+
 }
 
 export default new GrokService();

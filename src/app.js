@@ -4,6 +4,7 @@ import cors from 'cors';
 
 
 import grokRoutes from './routes/grok.router.js';
+import authRoutes from './routes/auth.router.js';
 
 dotenv.config();
 const app = express();
@@ -15,6 +16,7 @@ app.use(cors({ origin: process.env.FRONTEND_ORIGIN, credentials: true }));
 
 
 app.use('/api/resume', grokRoutes);
+app.use('/api/auth', authRoutes);
 
 
 app.get('/', (req, res) => {
