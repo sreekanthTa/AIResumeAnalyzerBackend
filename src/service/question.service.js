@@ -46,18 +46,18 @@ class QuestionService {
     }
   }
 
-  async getPaginatedQuestions(offset, limit, search, difficulty) {
+  async getPaginatedQuestions(offset, limit, search, difficulty, category) {
     try {
-      return await QuestionsModel.getPaginatedQuestions(offset, limit, search, difficulty);
+      return await QuestionsModel.getPaginatedQuestions(offset, limit, search, difficulty, category);
     } catch (error) {
       console.error('Error in getPaginatedQuestions service:', error);
       throw new Error('Service error: Unable to fetch paginated questions');
     }
   }
 
-  async getTotalQuestionsCount(search, difficulty) {
+  async getTotalQuestionsCount(search, difficulty, category) {
     try {
-      return await QuestionsModel.getTotalQuestionsCount(search, difficulty);
+      return await QuestionsModel.getTotalQuestionsCount(search, difficulty, category);
     } catch (error) {
       console.error('Error in getTotalQuestionsCount service:', error);
       throw new Error('Service error: Unable to fetch total questions count');

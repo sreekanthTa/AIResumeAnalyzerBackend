@@ -85,10 +85,22 @@ class QuestionsModel {
     }
   }
 
-  async getPaginatedQuestions(offset, limit, search, difficulty) {
-    let query = 'SELECT * FROM public.questions';
+  async getPaginatedQuestions(offset, limit, search, difficulty, category) {
+    let query = `SELECT DISTINCT questions.*,  Array_agg(tags.name) as tags
+                FROM questions 
+                JOIN question_tags qn_tags ON questions.id = qn_tags.question_id
+                JOIN tags ON qn_tags.tag_id = tags.id
+                `
+
+                ;
+                 
     const values = [];
     const conditions = [];
+
+    if(category){
+      values.push(category)
+      conditions.push(` tags.name = $${values.length}`)
+     }
     
     if(difficulty){
       values.push(difficulty)
@@ -104,6 +116,8 @@ class QuestionsModel {
       query += ' WHERE ' + conditions.join(' AND ');
     }
 
+    query += ` GROUP BY questions.id`;
+    
     if(limit){
       values.push(limit);
       query += ` LIMIT $${values.length}` ;
@@ -113,7 +127,7 @@ class QuestionsModel {
       query += ` OFFSET $${values.length}`;
     }
  
-    
+    console.log("query is", query, values)
     
     try {
       const result = await pool.query(query, values);
