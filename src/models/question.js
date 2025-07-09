@@ -22,10 +22,16 @@ class QuestionsModel {
     }
   }
 
-  async getAllQuestions() {
-    const query = 'SELECT * FROM public.questions';
+  async getAllQuestions(search = null) {
+    let query = 'SELECT * FROM public.questions';
+    const values = [];
+    if(search){
+      query+= ` WHERE title ILIKE $1 OR question ILIKE $1`;
+      values.push(`%${search}%`);
+    }
+    
     try {
-      const result = await pool.query(query);
+      const result = await pool.query(query, values);
       return result.rows;
     } catch (error) {
       console.error('Error executing getAllQuestions query:', error);
@@ -79,9 +85,21 @@ class QuestionsModel {
     }
   }
 
-  async getPaginatedQuestions(offset, limit) {
-    const query = 'SELECT * FROM public.questions LIMIT $1 OFFSET $2';
-    const values = [limit, offset];
+  async getPaginatedQuestions(offset, limit, search) {
+    let query = 'SELECT * FROM public.questions';
+    const values = [];
+
+    if(search){
+      query+= ` Where title ILIKE $1`;
+      values.push(`${search}%`);
+      query += ' LIMIT $2 OFFSET $3';
+      values.push(limit, offset);
+    }else{
+      query += ' LIMIT $1 OFFSET $2';
+      values.push(limit, offset);
+    }
+    
+    
     try {
       const result = await pool.query(query, values);
       return result.rows;
@@ -91,10 +109,16 @@ class QuestionsModel {
     }
   }
 
-  async getTotalQuestionsCount() {
-    const query = 'SELECT COUNT(*) FROM public.questions';
+  async getTotalQuestionsCount(search) {
+    let query = 'SELECT COUNT(*) FROM public.questions';
+    const values = [];
+
+    if(search){
+      query += ` WHERE title ILIKE $1 OR question ILIKE $1`;
+      values.push(`%${search}%`);
+    }
     try {
-      const result = await pool.query(query);
+      const result = await pool.query(query, values);
       return parseInt(result.rows[0].count, 10);
     } catch (error) {
       console.error('Error executing getTotalQuestionsCount query:', error);
