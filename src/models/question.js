@@ -85,19 +85,34 @@ class QuestionsModel {
     }
   }
 
-  async getPaginatedQuestions(offset, limit, search) {
+  async getPaginatedQuestions(offset, limit, search, difficulty) {
     let query = 'SELECT * FROM public.questions';
     const values = [];
+    const conditions = [];
+    
+    if(difficulty){
+      values.push(difficulty)
+      conditions.push( ` difficulty = $${values.length}`);
+    }
 
     if(search){
-      query+= ` Where title ILIKE $1`;
-      values.push(`${search}%`);
-      query += ' LIMIT $2 OFFSET $3';
-      values.push(limit, offset);
-    }else{
-      query += ' LIMIT $1 OFFSET $2';
-      values.push(limit, offset);
+      values.push(`%${search}%`);
+      conditions.push(` title ILIKE $${values.length}`);
     }
+    
+    if(conditions.length > 0){
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
+
+    if(limit){
+      values.push(limit);
+      query += ` LIMIT $${values.length}` ;
+    }
+    if(offset){
+      values.push(offset);
+      query += ` OFFSET $${values.length}`;
+    }
+ 
     
     
     try {
@@ -109,14 +124,26 @@ class QuestionsModel {
     }
   }
 
-  async getTotalQuestionsCount(search) {
+  async getTotalQuestionsCount(search, difficulty) {
     let query = 'SELECT COUNT(*) FROM public.questions';
     const values = [];
+    const conditions = [];
+    
+    if(difficulty){
+      values.push(difficulty)
+      conditions.push( ` difficulty = $${values.length}`);
+    }
 
     if(search){
-      query += ` WHERE title ILIKE $1 OR question ILIKE $1`;
       values.push(`%${search}%`);
+      conditions.push( ` title ILIKE $${values.length}`);
     }
+
+    if(conditions.length > 0){
+      query += ' WHERE ' + conditions.join(' AND ');  
+    }
+
+    
     try {
       const result = await pool.query(query, values);
       return parseInt(result.rows[0].count, 10);

@@ -25,10 +25,10 @@ class QuestionController {
 
   async getAllQuestions(req, res) {
     try {
-        const { limit = 10, offset = 0, search=null } = req.query; // Default values: limit 10, offset 0
-        console.log('Fetching paginated questions with limit:', limit, 'and offset:', offset, search);
-        const paginatedQuestions = await questionService.getPaginatedQuestions(parseInt(offset, 10), parseInt(limit, 10), search);
-        const totalCount = await questionService.getTotalQuestionsCount(search);
+        const { limit = 10, offset = 0, search=null, difficulty=null } = req.query; // Default values: limit 10, offset 0
+        console.log('Fetching paginated questions with limit:', limit, 'and offset:', offset, search, difficulty);
+        const paginatedQuestions = await questionService.getPaginatedQuestions(parseInt(offset, 10), parseInt(limit, 10), search, difficulty);
+        const totalCount = await questionService.getTotalQuestionsCount(search, difficulty);
 
         res.status(200).json({
             limit: parseInt(limit, 10),
