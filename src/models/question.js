@@ -86,20 +86,17 @@ class QuestionsModel {
   }
 
   async getPaginatedQuestions(offset, limit, search, difficulty, category) {
-    let query = `SELECT DISTINCT questions.*,  Array_agg(tags.name) as tags
+    let query = `SELECT  * 
                 FROM questions 
-                JOIN question_tags qn_tags ON questions.id = qn_tags.question_id
-                JOIN tags ON qn_tags.tag_id = tags.id
-                `
-
-                ;
+                 
+                ` ;
                  
     const values = [];
     const conditions = [];
 
     if(category){
       values.push(category)
-      conditions.push(` tags.name = $${values.length}`)
+      conditions.push(` question_type = $${values.length}`)
      }
     
     if(difficulty){
@@ -117,7 +114,7 @@ class QuestionsModel {
     }
 
     query += ` GROUP BY questions.id`;
-    
+
     if(limit){
       values.push(limit);
       query += ` LIMIT $${values.length}` ;
