@@ -40,7 +40,25 @@ class QuestionsModel {
   }
 
   async getQuestionById(id) {
-    const query = 'SELECT * FROM public.questions WHERE id = $1';
+    const query = `
+    SELECT 
+      qs.id,
+      qs.title,
+      qs.description,
+      json_agg(
+        json_build_object(
+          'id', tst_cs.id,
+          'input', tst_cs.input,
+          'output', tst_cs.expected_output
+        )
+      ) AS test_cases
+    FROM public.questions qs
+    JOIN test_cases tst_cs 
+      ON qs.id = tst_cs.question_id
+    WHERE qs.id = $1
+    GROUP BY qs.id, qs.title, qs.description;
+  `;
+  
     try {
       const result = await pool.query(query, [id]);
       return result.rows[0];
