@@ -439,6 +439,9 @@ Your task:
 - DO NOT implement the core logic — leave a clear TODO comment.
 - Match the style and conventions of the target language.
 - Ensure code runs without syntax errors.
+- Avoid unnecessary complexity or boilerplate.
+- Output only the code block without any additional text or explanations.
+
 
 Example:
 
@@ -461,13 +464,13 @@ function addTwoNumbers(a, b) {
 `;
 
     const userPrompt = `
-Problem Title:
-${title}
-Problem Statement:
-${problem}
-Language:
-${language}
-`;
+                        Problem Title:
+                        ${title}
+                        Problem Statement:
+                        ${problem}
+                        Language:
+                        ${language}
+                       `;
 
     const response = await this.openai.chat.completions.create({
       model: "llama3-70b-8192",
@@ -484,6 +487,67 @@ ${language}
     return "// Error: Unable to generate starter code. Please try again later.";
   }
 }
+
+async getSolutionSteps({problem, title}) {
+  try {
+    const SYSTEM_PROMPT = `
+You are an AI assistant that specializes in breaking down programming problems into clear solution steps.
+
+You will be given:
+1. A Title if available.
+1. A problem statement if Available.
+
+Your task:
+- Provide a **clear, concise, and professional** step-by-step plan to solve the problem.
+- Avoid writing actual code — focus on the **logic and algorithm**.
+- If there are multiple possible approaches, suggest the most optimal one.
+- Mention important edge cases to consider.
+- Steps should be actionable for someone who will implement the code later.
+- Dont include any code snippets or implementation details or any unecessary apart from below format.
+- Important: Output the result in strict JSON format as follows:
+
+Expected Output Format (JSON):
+{
+  "steps_to_solve": [
+    "Step 1: ...",
+    "Step 2: ...",
+    "...etc"
+  ],
+  "edge_cases": [
+    "...",
+    "..."
+  ],
+  "time_complexity_estimate": "O(...)",
+  "space_complexity_estimate": "O(...)"
+}
+`;
+
+    const userPrompt = `
+Problem Statement:
+${problem}
+`;
+
+    const response = await this.openai.chat.completions.create({
+      model: "llama3-70b-8192",
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: userPrompt }
+      ],
+      temperature: 0
+    });
+
+    return response.choices[0]?.message?.content?.trim() || "";
+  } catch (error) {
+    console.error("Error generating solution steps:", error);
+    return JSON.stringify({
+      steps_to_solve: [],
+      edge_cases: [],
+      time_complexity_estimate: "Unknown",
+      space_complexity_estimate: "Unknown"
+    });
+  }
+}
+
 
 
 

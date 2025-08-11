@@ -25,13 +25,19 @@ class QuestionService {
 
       const question =  await QuestionsModel.getQuestionById(id);
       const starter_code = await  grokService.getStarterCode({
-        title:question.title,
-        problem: question.description,
+        title:question?.title || "",
+        problem: question?.description || "",
       
       });
-            console.log('Fetched question:', starter_code);
+      console.log('Fetched starter code:', question);
+      const steps = await grokService.getSolutionSteps({
+        title: question?.title || "",
+        problem: question?.description || "",
+      })
 
-      return { ...question, starter_code };
+        console.log('Fetched question:', steps);
+
+      return { ...question, starter_code, steps:JSON.parse(steps) };
     } catch (error) {
       console.error('Error in getQuestionById service:', error);
       throw new Error('Service error: Unable to fetch question by ID');
