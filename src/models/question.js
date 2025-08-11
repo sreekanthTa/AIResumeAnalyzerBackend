@@ -51,7 +51,7 @@ class QuestionsModel {
           'input', tst_cs.input,
           'output', tst_cs.expected_output
         )
-      ) AS test_cases
+      ) AS test_cases, starter_code
     FROM public.questions qs
     JOIN test_cases tst_cs 
       ON qs.id = tst_cs.question_id

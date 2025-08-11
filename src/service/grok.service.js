@@ -417,6 +417,140 @@ class GrokService {
   }
 
 
+
+async getStarterCode({title,problem, language="javascript"}) {
+  try {
+    const SYSTEM_PROMPT = `
+You are an AI coding assistant specializing in generating starter code (skeletons) for coding problems.
+
+You will be given:
+1. A problem statement.
+2. A target programming language.
+
+Your task:
+- Produce minimal, clean, and correct starter code for the given problem in the specified language.
+- Include:
+  - Correct function or class signature
+  - Necessary imports
+  - Type annotations (if applicable)
+  - Docstrings explaining parameters and return values
+  - Input parsing logic if required
+  - Any helper method stubs
+- DO NOT implement the core logic — leave a clear TODO comment.
+- Match the style and conventions of the target language.
+- Ensure code runs without syntax errors.
+
+Example:
+
+Problem Statement:
+"Given two integers, return their sum."
+
+Language:
+JavaScript
+
+Output:
+/**
+ * Returns the sum of two integers.
+ * @param {number} a - First integer
+ * @param {number} b - Second integer
+ * @return {number} Sum of a and b
+ */
+function addTwoNumbers(a, b) {
+    // TODO: Implement this function
+}
+`;
+
+    const userPrompt = `
+Problem Title:
+${title}
+Problem Statement:
+${problem}
+Language:
+${language}
+`;
+
+    const response = await this.openai.chat.completions.create({
+      model: "llama3-70b-8192",
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: userPrompt }
+      ],
+      temperature: 0
+    });
+
+    return response.choices[0]?.message?.content?.trim() || "";
+  } catch (error) {
+    console.error("Error generating starter code:", error);
+    return "// Error: Unable to generate starter code. Please try again later.";
+  }
+}
+
+
+
+async codeEvaluationByAI(problem, solution) {
+  const systemPrompt = `
+You are an AI coding evaluator. 
+Your job is to determine if a submitted code implementation solves the given problem correctly.
+
+No official test cases will be provided. 
+
+Always follow these steps:
+1. Read the provided problem statement carefully and extract the requirements.
+2. Search the internet for a similar problem from trusted sources (LeetCode, HackerRank, Codeforces, GeeksforGeeks, AtCoder, InterviewBit, Project Euler).
+3. Retrieve multiple official test cases covering normal, edge, and complex scenarios.
+4. Evaluate the provided code against these test cases.
+5. Output the result in strict JSON format as follows:
+
+{
+  "meets_requirements": "YES" or "NO",
+  "reasoning": "Brief professional explanation of the evaluation result.",
+  "test_source": "Internet-sourced similar problem: [problem name & URL]",
+  "test_cases_used": [
+    { "input": "...", "expected_output": "...", "actual_output": "...", "passed": true/false }
+  ],
+  "issues_found": [
+    "List specific logical flaws or missing requirements."
+  ]
+}
+
+If no matching problem is found online, create realistic test cases that align with the requirements.
+Be strict and objective — only return YES if all cases pass.
+    `;
+
+      const userPrompt = `
+    **Problem Statement:**
+    ${problem}
+
+    **Submitted Code:**
+    ${solution}
+    `;
+
+  try {
+    const response = await this.openai.chat.completions.create({
+      model: "llama3-70b-8192", // Groq model
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+      temperature: 0
+    });
+
+    const content = response.choices[0].message.content;
+
+    // Try to parse JSON result
+    try {
+      return JSON.parse(content);
+    } catch (jsonErr) {
+      console.warn("AI returned non-JSON output, returning raw content.");
+      return content;
+    }
+
+  } catch (err) {
+    console.error("AI Evaluation failed:", err);
+    throw err;
+  }
+}
+
 }
 
 export default new GrokService();

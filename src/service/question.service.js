@@ -1,4 +1,5 @@
 import QuestionsModel from '../models/question.js';
+import grokService from './grok.service.js';
 
 class QuestionService {
   async createQuestion(data) {
@@ -21,7 +22,16 @@ class QuestionService {
 
   async getQuestionById(id) {
     try {
-      return await QuestionsModel.getQuestionById(id);
+
+      const question =  await QuestionsModel.getQuestionById(id);
+      const starter_code = await  grokService.getStarterCode({
+        title:question.title,
+        problem: question.description,
+      
+      });
+            console.log('Fetched question:', starter_code);
+
+      return { ...question, starter_code };
     } catch (error) {
       console.error('Error in getQuestionById service:', error);
       throw new Error('Service error: Unable to fetch question by ID');

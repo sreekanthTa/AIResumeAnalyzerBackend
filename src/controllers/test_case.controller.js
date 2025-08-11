@@ -49,6 +49,25 @@ class TestCaseController {
       return res.status(500).json({ error: 'Failed to insert test cases' });
     }
   }
+
+  async evaluateCode(req, res) {
+    try {
+      const { questionId } = req.params;
+      const { code } = req.body;
+      console.log('Evaluating code for questionId:', questionId, 'with code:', code);
+
+      if (!code) {
+        return res.status(400).json({ error: 'Code is required for evaluation' });
+      }
+
+      const evaluationResult = await TestCaseService.codeEvaluationByAI(questionId, code);
+      console.log('Evaluation result:', evaluationResult);
+      return res.status(200).json(evaluationResult);
+    } catch (error) {
+      console.error('TestCaseController.evaluateCode error:', error);
+      return res.status(500).json({ error: 'Failed to evaluate code' });
+    }
+  }
 }
 
 export default new TestCaseController();

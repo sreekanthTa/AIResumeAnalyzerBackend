@@ -9,7 +9,11 @@ router.post('/bulk', TestCaseController.bulkCreate);
 // POST /test-cases
 router.post('/', TestCaseController.create);
 
+
+//POST /test-cases/evaluate/:questionId
+router.post('/evaluate/:questionId', TestCaseController.evaluateCode);
+
+
 // GET /test-cases/:questionId
 router.get('/:questionId', TestCaseController.getByQuestionId);
-
 export default router;

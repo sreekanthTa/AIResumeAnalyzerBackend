@@ -1,4 +1,5 @@
 import TestCaseModel from "../models/test_cases.js";
+import grokService from "./grok.service.js";
 
 class TestCaseService {
    async createTestCase(data) {
@@ -33,6 +34,17 @@ class TestCaseService {
     } catch (error) {
       console.error('TestCaseService.bulkCreateTestCases error:', error);
       throw new Error('Failed to insert test cases');
+    }
+  }
+
+
+  async codeEvaluationByAI(questionId, code) {
+    try {
+      const question = await TestCaseModel.findByQuestionId(questionId);
+      return await grokService.codeEvaluationByAI(question, code);
+    } catch (error) {
+      console.error('TestCaseService.AIEvaluateCode error:', error);
+      throw new Error('Failed to evaluate code');
     }
   }
 
