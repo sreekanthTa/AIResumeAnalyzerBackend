@@ -45,6 +45,12 @@ class QuestionsModel {
       qs.id,
       qs.title,
       qs.description,
+      qs.difficulty,
+      qs.created_at,
+      qs.updated_at,
+      qs.sample_input,
+      qs.sample_output,
+      qs.question,
       json_agg(
         json_build_object(
           'id', tst_cs.id,
