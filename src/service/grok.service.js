@@ -489,33 +489,33 @@ ${language}
 
 async codeEvaluationByAI(problem, solution) {
   const systemPrompt = `
-You are an AI coding evaluator. 
-Your job is to determine if a submitted code implementation solves the given problem correctly.
+      You are an AI coding evaluator. 
+      Your job is to determine if a submitted code implementation solves the given problem correctly.
 
-No official test cases will be provided. 
+      No official test cases will be provided. 
 
-Always follow these steps:
-1. Read the provided problem statement carefully and extract the requirements.
-2. Search the internet for a similar problem from trusted sources (LeetCode, HackerRank, Codeforces, GeeksforGeeks, AtCoder, InterviewBit, Project Euler).
-3. Retrieve multiple official test cases covering normal, edge, and complex scenarios.
-4. Evaluate the provided code against these test cases.
-5. Output the result in strict JSON format as follows:
+      Always follow these steps:
+      1. Read the provided problem statement carefully and extract the requirements.
+      2. Search the internet for a similar problem from trusted sources (LeetCode, HackerRank, Codeforces, GeeksforGeeks, AtCoder, InterviewBit, Project Euler).
+      3. Retrieve multiple official test cases covering normal, edge, and complex scenarios.
+      4. Evaluate the provided code against these test cases.
+      5. Important: Output the result in strict JSON format as follows:
 
-{
-  "meets_requirements": "YES" or "NO",
-  "reasoning": "Brief professional explanation of the evaluation result.",
-  "test_source": "Internet-sourced similar problem: [problem name & URL]",
-  "test_cases_used": [
-    { "input": "...", "expected_output": "...", "actual_output": "...", "passed": true/false }
-  ],
-  "issues_found": [
-    "List specific logical flaws or missing requirements."
-  ]
-}
+      {
+        "meets_requirements": "YES" or "NO",
+        "reasoning": "Brief professional explanation of the evaluation result.",
+        "test_source": "Internet-sourced similar problem: [problem name & URL]",
+        "test_cases_used": [
+          { "input": "...", "expected_output": "...", "actual_output": "...", "passed": true/false }
+        ],
+        "issues_found": [
+          "List specific logical flaws or missing requirements."
+        ]
+      }
 
-If no matching problem is found online, create realistic test cases that align with the requirements.
-Be strict and objective — only return YES if all cases pass.
-    `;
+      If no matching problem is found online, create realistic test cases that align with the requirements.
+      Be strict and objective — only return YES if all cases pass.
+          `;
 
       const userPrompt = `
     **Problem Statement:**

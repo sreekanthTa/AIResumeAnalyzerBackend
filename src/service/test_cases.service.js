@@ -41,7 +41,9 @@ class TestCaseService {
   async codeEvaluationByAI(questionId, code) {
     try {
       const question = await TestCaseModel.findByQuestionId(questionId);
-      return await grokService.codeEvaluationByAI(question, code);
+      const codeEvaluation = await grokService.codeEvaluationByAI(question, code);
+      console.log('AI Code Evaluation Result:', codeEvaluation);
+      return codeEvaluation
     } catch (error) {
       console.error('TestCaseService.AIEvaluateCode error:', error);
       throw new Error('Failed to evaluate code');
