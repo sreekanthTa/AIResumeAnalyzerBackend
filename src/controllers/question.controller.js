@@ -1,3 +1,6 @@
+import grokService from '../service/grok.service.js';
+import langchainService from '../service/langchain.service.js';
+import pineconeService from '../service/pinecone.service.js';
 import questionService from '../service/question.service.js';
 
 class QuestionController {
@@ -74,6 +77,68 @@ class QuestionController {
       res.status(500).json({ message: error.message });
     }
   }
+async createEmbeddingsForAllQuestions(req, res) {
+  try {
+    const questions = await questionService.getAllQuestions();
+    if (!questions || questions.length === 0) {
+      return res.status(404).json({ message: 'No questions found' });
+    }
+
+    const batchSize = 50; // tune as needed
+    for (let i = 0; i < questions.length; i += batchSize) {
+      const batch = questions.slice(i, i + batchSize);
+
+      // Prepare texts for embedding: combine title + description, etc.
+      const texts = batch.map(q => ({"pageContent":`${q.title}\n${q.description}`, "metadata": { id: q.id.toString(), title: q.title } }));
+
+      // Call your Grok/OpenAI embedding service once per batch
+      const embeddings = await langchainService.addTexts(texts);
+      console.log("Embeddings", embeddings)
+
+      // Prepare vectors for Pinecone upsert
+      // const vectors = batch.map((q, idx) => ({
+      //   id: q.id.toString(),
+      //   values: embeddings[idx],
+      //   metadata: { title: q.title },
+      // }));
+
+      // // Upsert batch into Pinecone
+      // await pineconeService.upsertVectors(vectors);
+
+      // Optionally update your DB with just a flag or embedding summary (not full Pinecone response)
+      for (const q of batch) {
+        await questionService.updateEmbeddings({
+          id: q.id,
+          embeddingsCreated: true,
+        });
+      }
+
+      console.log(`Processed batch ${i / batchSize + 1}`);
+    }
+
+    res.status(200).json({ message: 'Embeddings created successfully for all questions' });
+  } catch (error) {
+    console.error('Error creating embeddings for all questions:', error);
+    res.status(500).json({ message: 'Failed to create embeddings for all questions', error: error.message });
+  }
+}
+
+
+async searchEmbeddings(req,res){
+  try{
+
+      const {question} = req.query
+
+      const result = await langchainService.searchEmbeddings(question,1)
+
+      return res.status(200).json({message:"Successfully Searched", result})
+      
+  }catch(error){
+    console.error('Error creating embeddings for all questions:', error);
+    res.status(500).json({ message: 'Failed to create embeddings for all questions', error: error.message });
+  }
+}
+
 }
 
 export default new QuestionController();

@@ -615,6 +615,25 @@ async codeEvaluationByAI(problem, solution) {
   }
 }
 
+async createEmbeddings(text) {
+ try{
+ 
+  const response = await this.openai.embeddings.create({
+    model: "llama-text-embed-v2",
+    input: text,
+  });
+
+  if (!response.data || response.data.length === 0) {
+    throw new Error("No embeddings returned from AI");
+  }
+  return response.data[0].embedding;
+
+ }catch(error){
+  console.error("Error creating embeddings:", error);
+  throw new Error("Failed to create embeddings");
+ }
+}
+
 }
 
 export default new GrokService();

@@ -22,8 +22,10 @@ class QuestionService {
 
   async getQuestionById(id) {
     try {
-
+      
+      console.log("id is",id)
       const question =  await QuestionsModel.getQuestionById(id);
+
       const starter_code = await  grokService.getStarterCode({
         title:question?.title || "",
         problem: question?.description || "",
@@ -77,6 +79,15 @@ class QuestionService {
     } catch (error) {
       console.error('Error in getTotalQuestionsCount service:', error);
       throw new Error('Service error: Unable to fetch total questions count');
+    }
+  }
+
+  async updateEmbeddings({id, embeddings}) {
+    try {
+      return await QuestionsModel.updateEmbeddings(id, embeddings);
+    } catch (error) {
+      console.error('Error in updateEmbeddings service:', error);
+      throw new Error('Service error: Unable to update embeddings');
     }
   }
 }

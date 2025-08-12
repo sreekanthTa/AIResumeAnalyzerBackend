@@ -50,23 +50,17 @@ class QuestionsModel {
       qs.updated_at,
       qs.sample_input,
       qs.sample_output,
-      qs.question,
-      json_agg(
-        json_build_object(
-          'id', tst_cs.id,
-          'input', tst_cs.input,
-          'output', tst_cs.expected_output
-        )
-      ) AS test_cases, starter_code
+      qs.question
+     
+       starter_code
     FROM public.questions qs
-    JOIN test_cases tst_cs 
-      ON qs.id = tst_cs.question_id
     WHERE qs.id = $1
-    GROUP BY qs.id, qs.title, qs.description;
+    GROUP BY qs.id;
   `;
   
     try {
       const result = await pool.query(query, [id]);
+      console.log("result is", result)
       return result.rows[0];
     } catch (error) {
       console.error('Error executing getQuestionById query:', error);
@@ -184,6 +178,17 @@ class QuestionsModel {
       return parseInt(result.rows[0].count, 10);
     } catch (error) {
       console.error('Error executing getTotalQuestionsCount query:', error);
+      throw new Error('Database query failed');
+    }
+  }
+
+  async updateEmbeddings(id, embeddings) {
+    const query = `UPDATE public.questions SET embedding = $1 WHERE id = $2 RETURNING *`;
+    try {
+      const result = await pool.query(query, [embeddings, id]);
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error executing updateEmbeddings query:', error);
       throw new Error('Database query failed');
     }
   }
