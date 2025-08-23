@@ -140,6 +140,26 @@ async searchEmbeddings(req,res){
   }
 }
 
+
+async createNewQuestion(req,res){
+  try{
+
+      const {question} = req.query
+
+      const  newQuestion = await grokService.getQuestionBasedOnText(question)
+      const newQuestionResponse = await newQuestion
+      console.log("response is", newQuestionResponse)
+
+      const result =  await questionService.createQuestion({...newQuestionResponse})
+
+      return res.status(200).json({message:"Successfully Searched", result})
+      
+  }catch(error){
+    console.error('Error creating embeddings for all questions:', error);
+    res.status(500).json({ message: 'Failed to create embeddings for all questions', error: error.message });
+  }
+}
+
 }
 
 export default new QuestionController();

@@ -642,17 +642,17 @@ async getQuestionBasedOnText(problem) {
     Output exactly one JSON object, do NOT repeat or provide examples.
 
     Output JSON keys:
-    {
+    {  "title: "<the title>",
       "question": "<the question>",
       "description": "<detailed description>",
+      "difficulty": "<difficulty level>"
       "input_format": "<input format>",
       "output_format": "<output format>",
       "constraints": "<constraints>",
       "sample_input": "<sample input>",
       "sample_output": "<sample output>",
-      "difficulty": "<difficulty level>"
+      "starter_code": "<starter code in the javascript language>",
     }
-
 
     **Important**: Do NOT include any explanation, notes, or text outside the JSON object. `;
 
