@@ -634,6 +634,60 @@ async createEmbeddings(text) {
  }
 }
 
+
+
+async getQuestionBasedOnText(problem) {
+  const systemPrompt = `    You are an assistant that provides LeetCode-style questions.
+    If a question is not found in the database, provide it in JSON format only, without any extra text.
+    Output exactly one JSON object, do NOT repeat or provide examples.
+
+    Output JSON keys:
+    {
+      "question": "<the question>",
+      "description": "<detailed description>",
+      "input_format": "<input format>",
+      "output_format": "<output format>",
+      "constraints": "<constraints>",
+      "sample_input": "<sample input>",
+      "sample_output": "<sample output>",
+      "difficulty": "<difficulty level>"
+    }
+
+
+    **Important**: Do NOT include any explanation, notes, or text outside the JSON object. `;
+
+      const userPrompt = ` Please check and give the problem like this
+    **Problem Statement:**
+    ${problem}
+
+    `;
+
+  try {
+    const response = await this.openai.chat.completions.create({
+      model: "llama3-70b-8192", // Groq model
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+      temperature: 0
+    });
+
+    const content = response.choices[0].message.content;
+
+    // Try to parse JSON result
+    try {
+      return JSON.parse(content);
+    } catch (jsonErr) {
+      console.warn("AI returned non-JSON output, returning raw content.");
+      return content;
+    }
+
+  } catch (err) {
+    console.error("AI Evaluation failed:", err);
+    throw err;
+  }
+}
+
 }
 
 export default new GrokService();
