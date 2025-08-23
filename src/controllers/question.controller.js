@@ -212,7 +212,7 @@ class QuestionController {
         .status(200)
         .json({
           message: "Successfully Searched",
-          result: newQuestionResponse,
+          results: [newQuestionResponse],
         });
     } catch (error) {
       console.error("Error creating embeddings for all questions:", error);
@@ -227,7 +227,8 @@ class QuestionController {
 
   async createNewWebQuestion(req, res) {
     try {
-      const { question, is_duplicate = false } = req.query;
+
+      const {  question, is_duplicate = false  } = req.body;
 
       const newQuestion = await grokService.getQuestionBasedOnText(question);
       const newQuestionResponse = await newQuestion;
@@ -251,11 +252,17 @@ class QuestionController {
         }
       }
 
+        const result = await questionService.createQuestion({
+        ...newQuestionResponse,
+      });
+
+      console.log("result is",result)
+
       const embedding_result = await pineconeService.addTexts([
         {
           pageContent: `${newQuestionResponse.title}\n${newQuestionResponse.description}`,
           metadata: {
-            id: newQuestionResponse.id.toString(),
+            id: result.id.toString(),
             title: newQuestionResponse.title,
           },
         },
@@ -268,9 +275,7 @@ class QuestionController {
           .json({ message: "Failed to create embeddings for the question" });
       }
 
-      const result = await questionService.createQuestion({
-        ...newQuestionResponse,
-      });
+    
 
       return res.status(200).json({ message: "Successfully Searched", result });
     } catch (error) {

@@ -420,48 +420,48 @@ class GrokService {
 
 async getStarterCode({title,problem, language="javascript"}) {
   try {
-    const SYSTEM_PROMPT = `
-You are an AI coding assistant specializing in generating starter code (skeletons) for coding problems.
+const SYSTEM_PROMPT = `
+          You are an AI coding assistant specializing in generating **starter code skeletons only**.
 
-You will be given:
-1. A problem statement.
-2. A target programming language.
+          You will be given:
+          1. A problem statement.
+          2. A target programming language.
 
-Your task:
-- Produce minimal, clean, and correct starter code for the given problem in the specified language.
-- Include:
-  - Correct function or class signature
-  - Necessary imports
-  - Type annotations (if applicable)
-  - Docstrings explaining parameters and return values
-  - Input parsing logic if required
-  - Any helper method stubs
-- DO NOT implement the core logic — leave a clear TODO comment.
-- Match the style and conventions of the target language.
-- Ensure code runs without syntax errors.
-- Avoid unnecessary complexity or boilerplate.
-- Output only the code block without any additional text or explanations.
+          Your task:
+          - Produce **only** the minimal starter code for the given problem in the specified language.
+          - Include:
+            - Correct function or class signature with parameters
+            - Necessary imports (if absolutely required for syntax)
+            - Type annotations (if applicable)
+            - Docstrings explaining parameters and return values
+          - Important: DO NOT implement any logic — leave a clear TODO comment inside the function or method.
+          - Important: Do NOT include any main method, test cases, input parsing, or helper methods.
+          - Important: Output only the starter function or class — nothing else.
+          - Ensure code is syntactically correct and follows best practices for the language.
+          - Use consistent indentation and formatting.
+          - Always start with a brief comment summarizing the problem.
+          - Output only the code block, without any additional explanation or text.
 
+          Example:
 
-Example:
+          Problem Statement:
+          "Given two integers, return their sum."
 
-Problem Statement:
-"Given two integers, return their sum."
+          Language:
+          JavaScript
 
-Language:
-JavaScript
+          Output:
+          /**
+           * Returns the sum of two integers.
+           * @param {number} a - First integer
+           * @param {number} b - Second integer
+           * @return {number} Sum of a and b
+           */
+          function addTwoNumbers(a, b) {
+              // TODO: Implement this function
+          }
+          `;
 
-Output:
-/**
- * Returns the sum of two integers.
- * @param {number} a - First integer
- * @param {number} b - Second integer
- * @return {number} Sum of a and b
- */
-function addTwoNumbers(a, b) {
-    // TODO: Implement this function
-}
-`;
 
     const userPrompt = `
                         Problem Title:
@@ -642,6 +642,7 @@ async getQuestionsByTextFromWeb(problem) {
 
     Output JSON keys:
     { "title": "<the title>", 
+       "difficulty": "<difficulty level>",
       "description": "<detailed description>"
     }
 
