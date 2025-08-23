@@ -1,101 +1,90 @@
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
-
-import { PineconeStore } from "@langchain/pinecone";
-import { Pinecone } from '@pinecone-database/pinecone';
-import LocalEmbeddings from './xenova.service.js';
+import { InferenceClient } from "@huggingface/inference";
+import pineconeService from "./pinecone_service.js";
 
 class LangchainService {
   constructor() {
-    this.indexName = process.env.PINECONE_INDEX_NAME || 'default-index';
-    this.dimension = parseInt(process.env.PINECONE_DIMENSION || '384', 10);
-    this.metric = process.env.PINECONE_METRIC || 'cosine';
-
-    this.embeddings = new LocalEmbeddings(); // now using free local model
-    this.pineconeClient = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
-    this.index = this.pineconeClient.Index(process.env.PINECONE_INDEX_NAME);
-
-    this.init()
+    console.log(
+      "HuggingFace API key:",
+      process.env.HUGGING_FACE_API_KEY ? "found" : "missing"
+    );
   }
 
-  async init(){
-    try{
-    this.vectorStore = await PineconeStore.fromExistingIndex(
-      this.embeddings,
-      {
-        pineconeIndex: this.index,
-        maxConcurrency: 5,
-        textKey: 'text',
-        namespace: process.env.PINECONE_NAMESPACE || 'default',
-      }
-    )
-    }catch(err){
-
-    }
-  }
-  async waitForIndex() {
-    while (true) {
-      const description = await this.pinecone.describeIndex(this.indexName);
-      if (description.status?.ready) break;
-      console.log('Index still initializing... waiting 5s');
-      await new Promise(res => setTimeout(res, 5000));
-    }
-  }
-
-  async createIndex() {
+  // ✅ Manual RAG pipeline
+  async search_tools(query) {
     try {
-      console.log(`Checking if Pinecone index "${this.indexName}" exists...`);
-      const indexes = await this.pineconeClient.listIndexes();
+      console.log("RAG Prompt:\n", query);
 
-      if (!indexes.indexes.some(idx => idx.name === this.indexName)) {
-        console.log(`Index "${this.indexName}" not found. Creating...`);
-        await this.pineconeClient.createIndex({
-          name: this.indexName,
-          dimension: this.dimension,
-          metric: "cosine",
-          spec: {
-            serverless: {
-              cloud: "aws",
-              region: "us-east-1" // pick your Pinecone serverless region
-            }
-          }
-
-        });
-
-        console.log(`Index "${this.indexName}" created. Waiting for it to be ready...`);
-        await this.waitForIndex();
-      } else {
-        console.log(`Index "${this.indexName}" already exists.`);
+      // 1. Try Pinecone first
+      let pineconeResults = [];
+      if (pineconeService.vectorStore) {
+        const results = await pineconeService.searchEmbeddings(query, 2);
+        console.log("Pinecone raw results:", results);
+        pineconeResults = results.filter(r => r[1] > 0.7); // Only keep high-confidence results
       }
 
-      this.index = this.pineconeClient.Index(this.indexName);
+      if(pineconeResults.length > 0 ){
+        console.log("Using Pinecone results.", pineconeResults);
+        return pineconeResults; // Return the top result
+      }
+      
+      console.log(`Pinecone returned ${pineconeResults.length} results.`);
 
+      // 2. Pass query + context to HuggingFace LLM
+      const hf = new InferenceClient(process.env.HUGGING_FACE_API_KEY);
+
+     
+
+    const prompt = `
+    You are an assistant that provides LeetCode-style questions.
+    If a question is not found in the database, provide it in JSON format only, without any extra text.
+    Output exactly one JSON object, do NOT repeat or provide examples.
+
+    Output JSON keys:
+    {
+      "question": "<the question>",
+      "description": "<detailed description>",
+      "input_format": "<input format>",
+      "output_format": "<output format>",
+      "constraints": "<constraints>",
+      "sample_input": "<sample input>",
+      "sample_output": "<sample output>",
+      "difficulty": "<difficulty level>"
+    }
+
+    Question: ${query}
+
+    **Important**: Do NOT include any explanation, notes, or text outside the JSON object.
+    `;
+
+
+
+      const response = await hf.textGeneration({
+        // model: "meta-llama/Llama-2-70b-hf", // Changed to a verified available model
+        "model":"google/gemma-2-2b-it",
+        inputs: prompt,
+        provider:"nebius",
+        parameters: {
+          max_new_tokens: 200,
+          temperature: 0.6,
+          return_full_text: true, // Add this to get complete response
+          provider:"nebius"
+        },
+      });
+
+      const cleanedResponse = response.generated_text
+        .trim()
+        .replace(/^Answer:\s*/i, ""); // Remove 'Answer:' prefix if present
+
+      console.log("Manual RAG Response:\n", cleanedResponse);
+      return cleanedResponse;
     } catch (error) {
-        console.error('Error creating Pinecone index:', error);
+      console.error("Error in search_tools:", error);
+      throw error;
     }
-  }
-
-  async addTexts(texts) {
-    // await this.createIndex();
-
-
-    const result = await this.vectorStore.addDocuments([
-      ...texts
-    ]);
-    console.log('Added texts to vector store:', result);
-
-    return result;
-  }
-
-  async searchEmbeddings(query, topK = 5) {
-    console.log("u", query, topK)
-    if (!this.vectorStore) {
-      throw new Error('Vector store not initialized or empty');
-    }
-
-
-    return await this.vectorStore.similaritySearch(query, topK);
   }
 }
 
 export default new LangchainService();
+

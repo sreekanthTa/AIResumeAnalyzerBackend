@@ -1,6 +1,6 @@
 import grokService from '../service/grok.service.js';
 import langchainService from '../service/langchain.service.js';
-import pineconeService from '../service/pinecone.service.js';
+import pineconeService from '../service/pinecone_service.js';
 import questionService from '../service/question.service.js';
 
 class QuestionController {
@@ -129,7 +129,8 @@ async searchEmbeddings(req,res){
 
       const {question} = req.query
 
-      const result = await langchainService.searchEmbeddings(question,1)
+      const result = await langchainService.search_tools(question)
+      // const result = await langchainService.searchEmbeddings(question,1)
 
       return res.status(200).json({message:"Successfully Searched", result})
       
