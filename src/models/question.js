@@ -2,8 +2,8 @@ import pool from '../db/index.js';
 
 class QuestionsModel {
   async createQuestion(data) {
-    const query = `INSERT INTO public.questions (title, question, description, difficulty, sample_input, sample_output, starter_code)
-                   VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`;
+    const query = `INSERT INTO public.questions (title, question, description, difficulty, sample_input, sample_output, starter_code, solution)
+                   VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`;
     const values = [
       data.title,
       data.question,
@@ -12,6 +12,7 @@ class QuestionsModel {
       data.sample_input,
       data.sample_output,
       data.starter_code,
+      data.solution
     ];
     try {
       const result = await pool.query(query, values);

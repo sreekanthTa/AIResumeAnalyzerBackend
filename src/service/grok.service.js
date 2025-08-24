@@ -696,6 +696,7 @@ async getQuestionBasedOnText(problem) {
       "sample_input": "<sample input>",
       "sample_output": "<sample output>",
       "starter_code": "<starter code in the javascript language>",
+      "solution": "<detailed solution in javascript language>"
     }
 
     **Important**: Do NOT include any explanation, notes, or text outside the JSON object. `;

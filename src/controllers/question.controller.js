@@ -15,6 +15,7 @@ class QuestionController {
         sample_input,
         sample_output,
         starter_code,
+        solution
       } = req.body;
 
       // Validate body data
@@ -25,7 +26,8 @@ class QuestionController {
         !difficulty ||
         !sample_input ||
         !sample_output ||
-        !starter_code
+        !starter_code || 
+        !solution
       ) {
         return res.status(400).json({ message: "All fields are required" });
       }
@@ -43,6 +45,8 @@ class QuestionController {
         sample_input,
         sample_output,
         starter_code,
+        solution
+
       };
       const questionData = await questionService.createQuestion(data);
       res.status(201).json(questionData);
