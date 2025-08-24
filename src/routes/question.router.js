@@ -9,6 +9,7 @@ router.get('/create_embeddings', questionController.createEmbeddingsForAllQuesti
 router.get('/search_embeddings', questionController.searchEmbeddings)
 router.get("/search_question_in_web", questionController.searchQuestionInWeb)
 router.post('/create_new_web_question', questionController.createNewWebQuestion)
+router.post('/chat_with_user_about_problem', questionController.chatWithUserAboutProblem)
 router.get('/:id', questionController.getQuestionById);
 router.put('/:id', questionController.updateQuestion);
 router.delete('/:id', questionController.deleteQuestion);

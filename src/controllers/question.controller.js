@@ -292,6 +292,55 @@ class QuestionController {
         });
     }
   }
+
+  //   async chatWithUserAboutProblem(req, res) {
+  //   try {
+
+  //     const {  problem, code, user_question } = req.body;
+
+  //     const aiSuggestion = await grokService.getChatWithUserAboutProblem({
+  //       problem,
+  //       code,
+  //       user_question
+  //     });
+  //     const parsedSuggestion = await aiSuggestion;
+  //     console.log("response is", parsedSuggestion);
+
+  //     return res.status(200).json({ message: "Successfully Searched", result:parsedSuggestion });
+  //   } catch (error) {
+  //     console.error("Error creating embeddings for all questions:", error);
+  //     res
+  //       .status(500)
+  //       .json({
+  //         message: "Failed to create embeddings for all questions",
+  //         error: error.message,
+  //       });
+  //   }
+  // }
+  async chatWithUserAboutProblem(req, res) {
+    try {
+
+      const {  problem, code, user_question , thread_id } = req.body;
+
+      const aiSuggestion = await langchainService.conversationalChat({
+        problem, code, user_question , thread_id 
+      });
+      
+      const parsedSuggestion = await aiSuggestion;
+      console.log("response is", parsedSuggestion);
+
+      return res.status(200).json({ message: "Successfully Searched", result:parsedSuggestion });
+    } catch (error) {
+      console.error("Error creating embeddings for all questions:", error);
+      res
+        .status(500)
+        .json({
+          message: "Failed to create embeddings for all questions",
+          error: error.message,
+        });
+    }
+  }
+
 }
 
 export default new QuestionController();

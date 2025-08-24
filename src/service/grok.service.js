@@ -7,6 +7,7 @@ export const openai = new OpenAI({
   baseURL: "https://api.groq.com/openai/v1",
 });
 
+
 class GrokService {
   constructor() {
     this.openai = openai;
@@ -706,6 +707,61 @@ async getQuestionBasedOnText(problem) {
     ${problem}
 
     `;
+
+  try {
+    const response = await this.openai.chat.completions.create({
+      model: "llama3-70b-8192", // Groq model
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+      temperature: 0
+    });
+
+    const content = response.choices[0].message.content;
+
+    // Try to parse JSON result
+    try {
+      return JSON.parse(content);
+    } catch (jsonErr) {
+      console.warn("AI returned non-JSON output, returning raw content.");
+      return content;
+    }
+
+  } catch (err) {
+    console.error("AI Evaluation failed:", err);
+    throw err;
+  }
+}
+
+async getChatWithUserAboutProblem({problem, code, user_question}) {
+  const systemPrompt = `
+        You are an AI coding assistant for a LeetCode-style platform.
+        Your role is to help the user understand problems, give hints, explain errors, and guide them
+        without giving away the full solution unless explicitly asked.
+
+        Rules:
+        - Be conversational and interactive.
+        - Provide hints in small steps.
+        - If the user is stuck, ask guiding questions or suggest approaches.
+        - Explain errors or issues in their code clearly.
+        - Do NOT provide unrelated explanations.
+        - Always respond in JSON format with keys:
+          {
+            "response": "<your conversational response here>"
+          }
+        - Do NOT include any text outside the JSON object.
+
+      `;
+
+
+    
+   const userPrompt = `
+            Problem: ${problem}
+            User code: ${code || 'N/A'}
+            User question: ${user_question || 'I am stuck, help me'}
+            `;
+
 
   try {
     const response = await this.openai.chat.completions.create({
