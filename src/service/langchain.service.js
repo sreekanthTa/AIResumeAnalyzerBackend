@@ -12,7 +12,7 @@ import {
   StateGraph,
 } from "@langchain/langgraph";
 import { ChatOpenAI } from "@langchain/openai";
-import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+import { AIMessage, HumanMessage, SystemMessage } from "@langchain/core/messages";
 
 class LangchainService {
   constructor() {
@@ -66,12 +66,23 @@ async  conversationalChat({ problem, code, user_question, thread_id }) {
       configuration: {
         baseURL: "https://api.groq.com/openai/v1",
       },
-    });
+    })
 
     // 2️⃣ Wrap chatModel into LangGraph node
     const callModel = async (state) => {
       const messages = state?.messages || [];
-      const response = await chatModel.invoke(messages);
+      const rawResponse = await chatModel.invoke(messages);
+      let parsed;
+  try {
+    parsed = JSON.parse(rawResponse.content);
+  } catch {
+    // fallback if the model output is not valid JSON
+    parsed = { response: rawResponse.content, code: [] };
+  }
+
+  const aiMessage = new AIMessage({ content: parsed });
+  return { messages: [...messages, aiMessage] };
+
       return { messages: [...messages, response] };
     };
 
@@ -92,9 +103,26 @@ async  conversationalChat({ problem, code, user_question, thread_id }) {
 
     // 6️⃣ Input messages (use LangChain message objects ✅)
     const input = [
-      new SystemMessage({
-        content: `You are a helpful AI tutor. The user is solving:\n${problem}\nTheir code is:\n${code}`,
-      }),
+new SystemMessage({
+  content: `You are a helpful AI tutor. 
+The user is solving:\n${problem}\n
+Their code is:\n${code}.
+
+Always return your answer in JSON with two fields:
+- "response": The response in plain text
+- "code": Pure Code wihtout any extra text
+
+Example:
+{
+  "response": "Here’s what’s wrong...",
+  "code": func sum(a,b){
+          return a+b 
+  }
+}
+`
+})
+
+,
       new HumanMessage({ content: user_question }),
     ];
 
@@ -103,6 +131,9 @@ async  conversationalChat({ problem, code, user_question, thread_id }) {
     // 7️⃣ Invoke app
     const result = await app.invoke({ messages: input }, config);
 
+
+
+    
     return {
       thread_id: finalThreadId,
       reply: result.messages[result.messages.length - 1].content,
